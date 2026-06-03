@@ -1,4 +1,8 @@
 package br.com.ucsal.aspmanager.repository;
 
-public interface TelefoneUsuarioRepository {
+
+import br.com.ucsal.aspmanager.model.TelefoneUsuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TelefoneUsuarioRepository extends JpaRepository<TelefoneUsuario, Long> {
 }
