@@ -1,5 +1,6 @@
 package br.com.ucsal.aspmanager.service;
 
+import br.com.ucsal.aspmanager.dto.request.AlterarSenhaRequest;
 import br.com.ucsal.aspmanager.dto.request.CreateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
@@ -14,6 +15,7 @@ import br.com.ucsal.aspmanager.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +29,11 @@ public class UsuarioService{
     private final UsuarioRepository usuarios;
 
     private final ProfessorRepository professores;
+    private final PasswordEncoder codificadorDeSenha;
     private final EscolaRepository escolas;
     private final UsuarioMapper usuarioMapper;
 
-    public UsuarioService(UsuarioRepository usuarios, ProfessorRepository professores, EscolaRepository escolas, UsuarioMapper usuarioMapper) {
+    public UsuarioService(UsuarioRepository usuarios, PasswordEncoder codificadorDeSenha,  ProfessorRepository professores, EscolaRepository escolas, UsuarioMapper usuarioMapper) {
         this.usuarios = usuarios;
         this.codificadorDeSenha = codificadorDeSenha;
         this.professores = professores;
