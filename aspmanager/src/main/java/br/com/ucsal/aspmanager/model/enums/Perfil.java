@@ -1,4 +1,4 @@
-package br.com.ucsal.aspmanager.enums;
+package br.com.ucsal.aspmanager.model.enums;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

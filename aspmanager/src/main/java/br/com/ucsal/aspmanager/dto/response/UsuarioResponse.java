@@ -1,7 +1,7 @@
 package br.com.ucsal.aspmanager.dto.response;
 
-import br.com.ucsal.aspmanager.enums.Perfil;
-import br.com.ucsal.aspmanager.enums.StatusRegistro;
+import br.com.ucsal.aspmanager.model.enums.Perfil;
+import br.com.ucsal.aspmanager.model.enums.StatusRegistro;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

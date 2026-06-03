@@ -1,7 +1,7 @@
 package br.com.ucsal.aspmanager.dto.request;
 
 
-import br.com.ucsal.aspmanager.enums.Perfil;
+import br.com.ucsal.aspmanager.model.enums.Perfil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
