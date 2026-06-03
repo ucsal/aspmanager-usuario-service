@@ -21,8 +21,7 @@ public class Professor {
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
-    @ManyToOne
-    @JoinColumn(name = "id_escola", nullable = false)
-    private Escola escola;
+    @JoinColumn(name = "id_escola")
+    private Long idEscola;
 
 }

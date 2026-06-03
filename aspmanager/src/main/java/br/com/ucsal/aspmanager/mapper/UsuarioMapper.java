@@ -44,7 +44,7 @@ public interface UsuarioMapper {
                 usuario.getStatusRegistro(),
                 professor == null ? null : professor.getMatricula(),
                 professor == null ? null : professor.getId(),
-                professor == null ? null : professor.getEscola().getId(),
+                professor == null ? null : professor.getIdEscola(),
                 toTelefoneStrings(usuario.getTelefones()));
     }
 
@@ -52,10 +52,10 @@ public interface UsuarioMapper {
         return toResponse(usuario, null);
     }
 
-    default Professor toProfessor(Usuario usuario, Escola escola, String matricula) {
+    default Professor toProfessor(Usuario usuario, Long idEscola, String matricula) {
         return Professor.builder()
                 .usuario(usuario)
-                .escola(escola)
+                .idEscola(idEscola)
                 .matricula(matricula)
                 .build();
     }
