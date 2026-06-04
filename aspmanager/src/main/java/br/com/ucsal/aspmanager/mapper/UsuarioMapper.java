@@ -60,16 +60,6 @@ public interface UsuarioMapper {
                 .build();
     }
 
-    @Named("escolaFromId")
-    default Escola escolaFromId(Long idEscola) {
-        if (idEscola == null) {
-            return null;
-        }
-
-        Escola escola = new Escola();
-        escola.setId(idEscola);
-        return escola;
-    }
 
     @Named("toTelefoneEntities")
     default List<TelefoneUsuario> toTelefoneEntities(List<String> telefones) {

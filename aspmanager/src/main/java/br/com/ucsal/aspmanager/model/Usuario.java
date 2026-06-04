@@ -37,4 +37,9 @@ public class Usuario {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "usuario", fetch = FetchType.LAZY)
     @Builder.Default
     private List<TelefoneUsuario> telefones = new ArrayList<>();
+
+    public boolean isEnabled(){
+
+        return false;
+    }
 }

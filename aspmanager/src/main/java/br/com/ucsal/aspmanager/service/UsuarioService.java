@@ -15,6 +15,7 @@ import br.com.ucsal.aspmanager.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,17 +28,14 @@ import java.util.List;
 public class UsuarioService{
 
     private final UsuarioRepository usuarios;
-
     private final ProfessorRepository professores;
     private final PasswordEncoder codificadorDeSenha;
-    private final EscolaRepository escolas;
     private final UsuarioMapper usuarioMapper;
 
-    public UsuarioService(UsuarioRepository usuarios, PasswordEncoder codificadorDeSenha,  ProfessorRepository professores, EscolaRepository escolas, UsuarioMapper usuarioMapper) {
+    public UsuarioService(UsuarioRepository usuarios, ProfessorRepository professores, PasswordEncoder codificadorDeSenha, UsuarioMapper usuarioMapper) {
         this.usuarios = usuarios;
-        this.codificadorDeSenha = codificadorDeSenha;
         this.professores = professores;
-        this.escolas = escolas;
+        this.codificadorDeSenha = codificadorDeSenha;
         this.usuarioMapper = usuarioMapper;
     }
 
@@ -55,8 +53,7 @@ public class UsuarioService{
 
         if (isProfessor) {
             usuarios.save(usuario);
-            Escola escola = escolas.findById(createUsuarioRequest.idEscola()).orElseThrow(() -> new EntityNotFoundException("Escola não encontrada"));
-            Professor professor = professores.save(usuarioMapper.toProfessor(usuario, escola, createUsuarioRequest.matricula()));
+            Professor professor = professores.save(usuarioMapper.toProfessor(usuario, createUsuarioRequest.idEscola(), createUsuarioRequest.matricula()));
             return usuarioMapper.toResponse(usuario, professor);
         }
 

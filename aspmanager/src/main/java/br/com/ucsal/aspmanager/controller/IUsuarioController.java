@@ -5,37 +5,28 @@ import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.response.ErroApiResponse;
 import br.com.ucsal.aspmanager.dto.response.UsuarioResponse;
-import br.com.ucsal.aspmanager.service.UsuarioService;
+import br.com.ucsal.aspmanager.model.enums.Perfil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Objects;
 
-
-@RestController
-@RequestMapping("/api/v1/usuarios")
-@Tag(name = "Usuários", description = "Gestão de usuários do sistema e cadastro de professores")
-public class UsuarioController implements IUsuarioController {
-
-    private final UsuarioService usuarioService;
-
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
-    }
-
+public interface IUsuarioController {
     @PatchMapping("/{id}")
     @Operation(operationId = "toggleUsuarioStatusById", summary = "Alternar status de usuário", description = "Altera o status entre ATIVO e INATIVO para o usuário informado.")
     @ApiResponses(value = {
@@ -44,11 +35,8 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<UsuarioResponse> alterarStatus(
-            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
-        return ResponseEntity.ok(usuarioService.alterarStatusRegistro(id));
-    }
+    ResponseEntity<UsuarioResponse> alterarStatus(
+            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id);
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
@@ -59,13 +47,8 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "403", description = "Sem permissão para acessar este usuário", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<UsuarioResponse> buscar(
-            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
-        return ResponseEntity.ok(usuarioService.buscar(id));
-    }
+    ResponseEntity<UsuarioResponse> buscar(
+            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id);
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
@@ -78,14 +61,9 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "409", description = "Conflito de regra de negócio", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<UsuarioResponse> atualizar(
+    ResponseEntity<UsuarioResponse> atualizar(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid UpdateUsuarioRequest request) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
-        return ResponseEntity.ok(usuarioService.atualizar(id, request));
-    }
+            @RequestBody @Valid UpdateUsuarioRequest request);
 
     @PatchMapping("/{id}/alterar-senha")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
@@ -97,15 +75,9 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "403", description = "Sem permissão para alterar senha deste usuário", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<Void> alterarSenha(
+    ResponseEntity<Void> alterarSenha(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid AlterarSenhaRequest request) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
-        usuarioService.alterarSenha(request, id);
-        return ResponseEntity.noContent().build();
-    }
+            @RequestBody @Valid AlterarSenhaRequest request);
 
     @GetMapping("/professores")
     @Operation(operationId = "listProfessores", summary = "Listar professores", description = "Retorna lista paginada de professores ativos.")
@@ -114,10 +86,7 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "401", description = "Não autenticado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<Page<UsuarioResponse>> buscarTodosOsProfessores(@ParameterObject Pageable filtros) {
-        return ResponseEntity.ok(usuarioService.buscarTodosProfessores(filtros));
-    }
+    ResponseEntity<Page<UsuarioResponse>> buscarTodosOsProfessores(@ParameterObject Pageable filtros);
 
     @PutMapping("/professores/{idProfessor}")
     @Operation(operationId = "updateProfessorById", summary = "Atualizar professor", description = "Atualiza dados acadêmicos do professor, como matrícula e escola vinculada.")
@@ -129,12 +98,9 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "404", description = "Professor não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "409", description = "Conflito de regra de negócio", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<UsuarioResponse> atualizarProfessor(
+    ResponseEntity<UsuarioResponse> atualizarProfessor(
             @Parameter(description = "ID do professor", example = "1") @PathVariable Long idProfessor,
-            @RequestBody @Valid UpdateProfessorRequest request) {
-        return ResponseEntity.ok(usuarioService.atualizarProfessor(idProfessor, request));
-    }
+            @RequestBody @Valid UpdateProfessorRequest request);
 
     @DeleteMapping("/professores/{idProfessor}")
     @Operation(operationId = "deleteProfessorById", summary = "Excluir professor", description = "Exclui o vínculo de professor por identificador.")
@@ -144,16 +110,31 @@ public class UsuarioController implements IUsuarioController {
             @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Professor não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @Override
-    public ResponseEntity<Void> deletarProfessor(
-            @Parameter(description = "ID do professor", example = "1") @PathVariable Long idProfessor) {
-        usuarioService.deletarProfessor(idProfessor);
-        return ResponseEntity.noContent().build();
+    ResponseEntity<Void> deletarProfessor(
+            @Parameter(description = "ID do professor", example = "1") @PathVariable Long idProfessor);
+
+    URI location(UsuarioResponse usuario, UriComponentsBuilder uriBuilder);
+
+    default void validarAcessoAoUsuario(Long id, UsuarioResponse usuarioAutenticado) {
+        if (usuarioAutenticado == null) {
+            throw new AccessDeniedException("Usuário não autenticado");
+        }
+
+        if (usuarioAutenticado.perfil() != Perfil.ADMIN && !Objects.equals(id, usuarioAutenticado.id())) {
+            throw new AccessDeniedException("Sem permissão para acessar este usuário");
+        }
     }
 
-    @Override
-    public URI location(UsuarioResponse usuario, UriComponentsBuilder uriBuilder) {
-        return uriBuilder.path("/api/v1/usuarios/{id}").buildAndExpand(usuario.id()).toUri();
-    }
+    default UsuarioResponse usuarioAutenticado() {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
 
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UsuarioResponse usuarioResponse) {
+            return usuarioResponse;
+        }
+
+        return null;
+    }
 }
