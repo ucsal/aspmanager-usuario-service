@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.ucsal</groupId>
-	<artifactId>aspmanager</artifactId>
+	<artifactId>aspmanager-usuario-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>aspmanager</name>
 	<description>aspmanager</description>
