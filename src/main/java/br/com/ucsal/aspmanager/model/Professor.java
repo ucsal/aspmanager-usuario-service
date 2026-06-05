@@ -21,7 +21,7 @@ public class Professor {
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
-    @JoinColumn(name = "id_escola")
+    @Column(name = "id_escola")
     private Long idEscola;
 
 }
