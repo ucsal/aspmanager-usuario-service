@@ -27,12 +27,10 @@ public interface UsuarioMapper {
     @Mapping(target = "statusRegistro", ignore = true)
     @Mapping(target = "senha", ignore = true)
     @Mapping(target = "perfil", ignore = true)
-    @Mapping(target = "authorities", ignore = true)
     void updateEntity(UpdateUsuarioRequest request, @MappingTarget Usuario usuario);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "usuario", ignore = true)
-    @Mapping(target = "escola", source = "idEscola", qualifiedByName = "escolaFromId")
     void updateProfessor(UpdateProfessorRequest request, @MappingTarget Professor professor);
 
     default UsuarioResponse toResponse(Usuario usuario, Professor professor) {

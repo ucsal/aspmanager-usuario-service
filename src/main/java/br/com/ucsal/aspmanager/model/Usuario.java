@@ -39,7 +39,6 @@ public class Usuario {
     private List<TelefoneUsuario> telefones = new ArrayList<>();
 
     public boolean isEnabled(){
-
-        return false;
+        return StatusRegistro.ATIVO.equals(statusRegistro);
     }
 }

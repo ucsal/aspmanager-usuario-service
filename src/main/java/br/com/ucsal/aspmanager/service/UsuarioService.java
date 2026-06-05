@@ -15,7 +15,6 @@ import br.com.ucsal.aspmanager.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -151,7 +150,7 @@ public class UsuarioService{
 
 
     private Usuario buscarUsuarioPorId(Long id) {
-        return usuarios.findById(id).orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado!"));
+        return usuarios.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
     }
 
     @Transactional
