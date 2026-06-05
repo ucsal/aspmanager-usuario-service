@@ -5,7 +5,6 @@ import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.response.ErroApiResponse;
 import br.com.ucsal.aspmanager.dto.response.UsuarioResponse;
-import br.com.ucsal.aspmanager.model.enums.Perfil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,11 +15,10 @@ import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -39,7 +37,6 @@ public interface IUsuarioController {
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id);
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "getUsuarioById", summary = "Buscar usuário por ID", description = "ADMIN pode consultar qualquer usuário. PROFESSOR só pode consultar o próprio cadastro.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
@@ -48,10 +45,11 @@ public interface IUsuarioController {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     ResponseEntity<UsuarioResponse> buscar(
-            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id);
+            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole);
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "updateUsuarioById", summary = "Atualizar usuário", description = "ADMIN pode atualizar qualquer usuário. PROFESSOR só pode atualizar o próprio cadastro.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
@@ -63,10 +61,11 @@ public interface IUsuarioController {
     })
     ResponseEntity<UsuarioResponse> atualizar(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid UpdateUsuarioRequest request);
+            @RequestBody @Valid UpdateUsuarioRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole);
 
     @PatchMapping("/{id}/alterar-senha")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "changeUsuarioSenhaById", summary = "Alterar senha do usuário", description = "Permite alterar senha informando senha atual e nova senha.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso"),
@@ -77,7 +76,9 @@ public interface IUsuarioController {
     })
     ResponseEntity<Void> alterarSenha(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid AlterarSenhaRequest request);
+            @RequestBody @Valid AlterarSenhaRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole);
 
     @GetMapping("/professores")
     @Operation(operationId = "listProfessores", summary = "Listar professores", description = "Retorna lista paginada de professores ativos.")
@@ -115,26 +116,16 @@ public interface IUsuarioController {
 
     URI location(UsuarioResponse usuario, UriComponentsBuilder uriBuilder);
 
-    default void validarAcessoAoUsuario(Long id, UsuarioResponse usuarioAutenticado) {
-        if (usuarioAutenticado == null) {
-            throw new AccessDeniedException("Usuário não autenticado");
+    default void validarAcessoAoUsuario(Long id, String xUserId, String xUserRole) {
+        if (xUserId == null || xUserRole == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuário não autenticado");
         }
 
-        if (usuarioAutenticado.perfil() != Perfil.ADMIN && !Objects.equals(id, usuarioAutenticado.id())) {
-            throw new AccessDeniedException("Sem permissão para acessar este usuário");
-        }
-    }
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(xUserRole);
+        boolean isSelf = Objects.equals(id, Long.parseLong(xUserId));
 
-    default UsuarioResponse usuarioAutenticado() {
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            return null;
+        if (!isAdmin && !isSelf) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissão para acessar este usuário");
         }
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UsuarioResponse usuarioResponse) {
-            return usuarioResponse;
-        }
-
-        return null;
     }
 }

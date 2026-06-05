@@ -18,7 +18,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -51,7 +50,6 @@ public class UsuarioController implements IUsuarioController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "getUsuarioById", summary = "Buscar usuário por ID", description = "ADMIN pode consultar qualquer usuário. PROFESSOR só pode consultar o próprio cadastro.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
@@ -61,14 +59,14 @@ public class UsuarioController implements IUsuarioController {
     })
     @Override
     public ResponseEntity<UsuarioResponse> buscar(
-            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
+            @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole) {
+        validarAcessoAoUsuario(id, xUserId, xUserRole);
         return ResponseEntity.ok(usuarioService.buscar(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "updateUsuarioById", summary = "Atualizar usuário", description = "ADMIN pode atualizar qualquer usuário. PROFESSOR só pode atualizar o próprio cadastro.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
@@ -81,14 +79,14 @@ public class UsuarioController implements IUsuarioController {
     @Override
     public ResponseEntity<UsuarioResponse> atualizar(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid UpdateUsuarioRequest request) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
+            @RequestBody @Valid UpdateUsuarioRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole) {
+        validarAcessoAoUsuario(id, xUserId, xUserRole);
         return ResponseEntity.ok(usuarioService.atualizar(id, request));
     }
 
     @PatchMapping("/{id}/alterar-senha")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     @Operation(operationId = "changeUsuarioSenhaById", summary = "Alterar senha do usuário", description = "Permite alterar senha informando senha atual e nova senha.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso"),
@@ -100,9 +98,10 @@ public class UsuarioController implements IUsuarioController {
     @Override
     public ResponseEntity<Void> alterarSenha(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-            @RequestBody @Valid AlterarSenhaRequest request) {
-        UsuarioResponse usuarioAutenticado = usuarioAutenticado();
-        validarAcessoAoUsuario(id, usuarioAutenticado);
+            @RequestBody @Valid AlterarSenhaRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String xUserRole) {
+        validarAcessoAoUsuario(id, xUserId, xUserRole);
         usuarioService.alterarSenha(request, id);
         return ResponseEntity.noContent().build();
     }
