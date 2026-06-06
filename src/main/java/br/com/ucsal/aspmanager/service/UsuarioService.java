@@ -4,6 +4,7 @@ import br.com.ucsal.aspmanager.dto.request.AlterarSenhaRequest;
 import br.com.ucsal.aspmanager.dto.request.CreateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
+import br.com.ucsal.aspmanager.dto.response.UsuarioAuthResponse;
 import br.com.ucsal.aspmanager.dto.response.UsuarioResponse;
 import br.com.ucsal.aspmanager.mapper.UsuarioMapper;
 import br.com.ucsal.aspmanager.model.Professor;
@@ -70,6 +71,17 @@ public class UsuarioService{
         Usuario usuario = buscarUsuarioPorId(id);
         Professor professor = professores.findByUsuario_Id(usuario.getId()).orElse(null);
         return usuarioMapper.toResponse(usuario, professor);
+    }
+
+    public UsuarioAuthResponse buscarPorEmail(String email) {
+        Usuario usuario = usuarios.findUsuarioByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com email: " + email));
+        return new UsuarioAuthResponse(
+                usuario.getId(),
+                usuario.getEmail(),
+                usuario.getSenha(),
+                usuario.getPerfil(),
+                usuario.getStatusRegistro());
     }
 
     @Transactional

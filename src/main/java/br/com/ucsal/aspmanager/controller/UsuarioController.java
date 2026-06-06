@@ -4,6 +4,7 @@ import br.com.ucsal.aspmanager.dto.request.AlterarSenhaRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.response.ErroApiResponse;
+import br.com.ucsal.aspmanager.dto.response.UsuarioAuthResponse;
 import br.com.ucsal.aspmanager.dto.response.UsuarioResponse;
 import br.com.ucsal.aspmanager.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,25 @@ public class UsuarioController implements IUsuarioController {
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
+    }
+
+    /**
+     * Endpoint interno usado pelo ms-auth via Feign para autenticação.
+     * Retorna os dados de autenticação incluindo senha criptografada.
+     * Excluído do GatewayHeaderFilter (não requer X-User-Id).
+     */
+    @GetMapping("/email/{email}")
+    @Operation(operationId = "getUsuarioByEmail", summary = "[INTERNO] Buscar usuário por email",
+            description = "Endpoint interno consumido pelo ms-auth via Feign para validar credenciais de login.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    public ResponseEntity<UsuarioAuthResponse> buscarPorEmail(
+            @Parameter(description = "Email do usuário", example = "admin@aspmanager.com")
+            @PathVariable String email) {
+        return ResponseEntity.ok(usuarioService.buscarPorEmail(email));
     }
 
     @PatchMapping("/{id}")
