@@ -126,7 +126,7 @@ public class UsuarioController implements IUsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/professores")
+    @GetMapping("/professor")
     @Operation(operationId = "listProfessores", summary = "Listar professores", description = "Retorna lista paginada de professores ativos.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Consulta realizada com sucesso"),
@@ -138,7 +138,7 @@ public class UsuarioController implements IUsuarioController {
         return ResponseEntity.ok(usuarioService.buscarTodosProfessores(filtros));
     }
 
-    @PutMapping("/professores/{idProfessor}")
+    @PutMapping("/professor/{idProfessor}")
     @Operation(operationId = "updateProfessorById", summary = "Atualizar professor", description = "Atualiza dados acadêmicos do professor, como matrícula e escola vinculada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Professor atualizado com sucesso"),
@@ -155,7 +155,7 @@ public class UsuarioController implements IUsuarioController {
         return ResponseEntity.ok(usuarioService.atualizarProfessor(idProfessor, request));
     }
 
-    @DeleteMapping("/professores/{idProfessor}")
+    @DeleteMapping("/professor/{idProfessor}")
     @Operation(operationId = "deleteProfessorById", summary = "Excluir professor", description = "Exclui o vínculo de professor por identificador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Professor excluído com sucesso"),
@@ -172,7 +172,7 @@ public class UsuarioController implements IUsuarioController {
 
     @Override
     public URI location(UsuarioResponse usuario, UriComponentsBuilder uriBuilder) {
-        return uriBuilder.path("/api/v1/usuarios/{id}").buildAndExpand(usuario.id()).toUri();
+        return uriBuilder.path("/api/v1/usuario/{id}").buildAndExpand(usuario.id()).toUri();
     }
 
 }
