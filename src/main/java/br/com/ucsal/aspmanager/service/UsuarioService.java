@@ -64,7 +64,10 @@ public class UsuarioService{
 
     public Page<UsuarioResponse> buscarTodos(Pageable filtros) {
         return usuarios.findByStatusRegistro(StatusRegistro.ATIVO, filtros)
-                .map(usuarioMapper::toResponse);
+                .map(u -> {
+                    Professor prof = professores.findByUsuario_Id(u.getId()).orElse(null);
+                    return usuarioMapper.toResponse(u, prof);
+                });
     }
 
     public UsuarioResponse buscar(Long id) {
@@ -97,7 +100,9 @@ public class UsuarioService{
 
         atualizarTelefones(update, updateUsuarioRequest.telefones());
 
-        return usuarioMapper.toResponse(usuarios.save(update));
+        Usuario saved = usuarios.save(update);
+        Professor prof = professores.findByUsuario_Id(saved.getId()).orElse(null);
+        return usuarioMapper.toResponse(saved, prof);
     }
 
     @Transactional
@@ -118,7 +123,9 @@ public class UsuarioService{
             update.setStatusRegistro(StatusRegistro.ATIVO);
         }
 
-        return usuarioMapper.toResponse(usuarios.save(update));
+        Usuario saved = usuarios.save(update);
+        Professor prof = professores.findByUsuario_Id(saved.getId()).orElse(null);
+        return usuarioMapper.toResponse(saved, prof);
     }
 
     @Transactional
