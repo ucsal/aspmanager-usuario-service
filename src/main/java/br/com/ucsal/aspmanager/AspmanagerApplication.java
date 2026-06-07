@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
   	servers = {
         @Server(url = "http://localhost:8082", description = "Ambiente Local (Desenvolvimento)"),
-        @Server(url = "http://localhost:8080/usuario", description = "API Gateway (Produção)")
+        @Server(url = "http://localhost:8080", description = "API Gateway (Produção)")
     })
 public class AspmanagerApplication {
 
