@@ -72,7 +72,11 @@ public interface UsuarioMapper {
             }
 
             TelefoneUsuario telefone = new TelefoneUsuario();
-            telefone.setNumero(numero.replaceAll("[()\\s-]", ""));
+            String limpo = numero.replaceAll("[()\\s-]", "");
+            if (!limpo.matches("\\d{10,11}")) {
+                throw new IllegalArgumentException("Número de telefone inválido: " + numero + ". Deve conter 10 ou 11 dígitos.");
+            }
+            telefone.setNumero(limpo);
             entidades.add(telefone);
         }
 
