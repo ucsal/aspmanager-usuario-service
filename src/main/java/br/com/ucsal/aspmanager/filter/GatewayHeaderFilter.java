@@ -16,7 +16,7 @@ public class GatewayHeaderFilter implements Filter {
 
     private static final List<String> EXCLUDED_PREFIXES = List.of(
             "/swagger-ui", "/v3/api-docs", "/webjars", "/actuator", "/error",
-            "/api/v1/usuarios/email"  // chamada interna do ms-auth via Feign (sem X-User-Id)
+            "/api/v1/usuario/email"  // chamada interna do ms-auth via Feign (sem X-User-Id)
     );
 
     @Override
