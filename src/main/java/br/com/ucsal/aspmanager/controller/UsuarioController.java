@@ -1,6 +1,7 @@
 package br.com.ucsal.aspmanager.controller;
 
 import br.com.ucsal.aspmanager.dto.request.AlterarSenhaRequest;
+import br.com.ucsal.aspmanager.dto.request.CreateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateProfessorRequest;
 import br.com.ucsal.aspmanager.dto.request.UpdateUsuarioRequest;
 import br.com.ucsal.aspmanager.dto.response.ErroApiResponse;
@@ -41,6 +42,34 @@ public class UsuarioController implements IUsuarioController {
      * Retorna os dados de autenticação incluindo senha criptografada.
      * Excluído do GatewayHeaderFilter (não requer X-User-Id).
      */
+
+    @Operation(
+            summary = "Criar registro",
+            description = "Cria um novo registro do recurso correspondente ao endpoint."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Registro criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Não autenticado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Acesso negado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Entidade relacionada não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflito de regra de negócio/integridade",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody CreateUsuarioRequest createRequest, UriComponentsBuilder uriBuilder) {
+        UsuarioResponse criar = usuarioService.criar(createRequest);
+        URI uri = location(criar, uriBuilder);
+
+        return ResponseEntity.created(uri).body(criar);
+    }
+
     @GetMapping("/email/{email}")
     @Operation(operationId = "getUsuarioByEmail", summary = "[INTERNO] Buscar usuário por email",
             description = "Endpoint interno consumido pelo ms-auth via Feign para validar credenciais de login.")
@@ -67,6 +96,24 @@ public class UsuarioController implements IUsuarioController {
     public ResponseEntity<UsuarioResponse> alterarStatus(
             @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.alterarStatusRegistro(id));
+    }
+
+    @Operation(
+            summary = "Listar registros",
+            description = "Retorna uma lista paginada de registros do recurso correspondente ao endpoint."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Consulta realizada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Acesso negado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping
+    public ResponseEntity<Page<UsuarioResponse>> buscar(@ParameterObject Pageable filtros) {
+        return ResponseEntity.ok(usuarioService.buscarTodos(filtros));
     }
 
     @GetMapping("/{id}")
@@ -123,6 +170,12 @@ public class UsuarioController implements IUsuarioController {
             @RequestHeader(value = "X-User-Role", required = false) String xUserRole) {
         validarAcessoAoUsuario(id, xUserId, xUserRole);
         usuarioService.alterarSenha(request, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@Parameter(description = "Identificador do registro", example = "1") @PathVariable Long id) {
+        usuarioService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
