@@ -26,7 +26,7 @@ import java.net.URI;
 
 
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/v1/usuario")
 @Tag(name = "Usuários", description = "Gestão de usuários do sistema e cadastro de professores")
 public class UsuarioController implements IUsuarioController {
 
